@@ -8,7 +8,7 @@ import {
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
 import DiscordProvider from "next-auth/providers/discord";
-
+import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env";
 import { db } from "@/server/db";
 
@@ -54,6 +54,19 @@ export const authOptions: NextAuthOptions = {
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
     }),
+    CredentialsProvider({
+      name: "Credentials",
+      credentials:{
+        email: {label: "Email", type: "text"},
+        password: {label: "Password", type: "password"}
+      },
+      async authorize(credentials){
+        console.log(credentials)
+
+        return {id: 1, name: "test", email: "test",image: "test"}
+      }
+
+    })
     ],
 };
 
