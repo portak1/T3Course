@@ -1,5 +1,6 @@
 import LoadingOverlay from "@/common/modules/components/LoadingOverlay/LoadingOverlay";
 import { NextPage } from "next";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 const SignIn: NextPage = () => {
@@ -7,9 +8,14 @@ const SignIn: NextPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState("");
 
-  const signIn = async () => {
+  const signInFunc = async () => {
     setIsLoading(true);
     console.log(email, password);
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
     setEmail("");
     setPassword("");
     setIsLoading(false);
@@ -50,7 +56,7 @@ const SignIn: NextPage = () => {
 
         <button
           onClick={async () => {
-            await signIn();
+            await signInFunc();
             console.log("sign in");
           }}
         >

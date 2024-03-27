@@ -60,10 +60,8 @@ export const authOptions: NextAuthOptions = {
         email: {label: "Email", type: "text"},
         password: {label: "Password", type: "password"}
       },
-      async authorize(credentials){
-        console.log(credentials)
-
-        return {id: 1, name: "test", email: "test",image: "test"}
+      async authorize(credentials){        console.log(credentials)
+        return null
       }
 
     })
