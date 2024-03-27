@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type GetServerSidePropsContext } from "next";
+import bcrypt from "bcrypt"
 
 import {
   getServerSession,
@@ -22,6 +23,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: DefaultSession["user"] & {
       id: string;
+      surname: string;
       // ...other properties
       // role: UserRole;
     };
@@ -38,17 +40,29 @@ declare module "next-auth" {
  *
  * @see https://next-auth.js.org/configuration/options
  */
+
+const AUTH_PAGES = {
+  signIn: "/auth/signin",
+  signOut: "/auth/signout",
+  index: "/"
+}
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
+    session: ({ session, user, token }) => {
+      return {
       ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    }},
+    async jwt({ token }) {
+      console.log(token)
+      return token;
+    },
   },
+  session: {
+    strategy: "jwt",
+  },
+  pages: AUTH_PAGES,
   adapter: PrismaAdapter(db) as Adapter,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
@@ -59,13 +73,25 @@ export const authOptions: NextAuthOptions = {
       credentials:{
         email: {label: "Email", type: "text"},
         password: {label: "Password", type: "password"}
-      },
-      async authorize(credentials){        console.log(credentials)
+      },  
+      async authorize(credentials){    
+        const user = await db.user.findFirst({
+          where: {
+            email: credentials?.email
+          }
+        })
+        
+        const isVerified = await bcrypt.compare(credentials?.password ?? "", user?.password ?? "")
+        if(isVerified){
+          console.log("User found", user) 
+          return user
+        }
+
+        console.log("User not found")
         return null
       }
-
     })
-    ],
+    ]
 };
 
 /**

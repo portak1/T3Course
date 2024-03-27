@@ -1,21 +1,28 @@
 import LoadingOverlay from "@/common/modules/components/LoadingOverlay/LoadingOverlay";
 import { NextPage } from "next";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 const SignIn: NextPage = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState("");
+  const { data } = useSession();
+  const { push, replace } = useRouter();
 
+  console.log(data);
   const signInFunc = async () => {
     setIsLoading(true);
-    console.log(email, password);
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
+    if (result?.ok) {
+      await push("/landingPage");
+    }
+    console.log(result);
     setEmail("");
     setPassword("");
     setIsLoading(false);
